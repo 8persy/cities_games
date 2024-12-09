@@ -160,7 +160,7 @@ class CityGameServer:
                     answer = input('ok or not:')
                     if answer == 'ok':
                         threading.Thread(target=self.handle_client, args=(player, name)).start()
-                        room.broadcast(player, f'игрок {name} забанен')
+                        player.send(pickle.dumps(f'игрок {room.names[(turn_index + 1) % 2]} забанен'))
 
                         turn_index = (turn_index + 1) % 2
                         player: socket.socket = room.clients[turn_index]
@@ -181,8 +181,6 @@ class CityGameServer:
 
                     if self.is_valid_city(city, current_letter, room):
                         room.city_history.append(city)
-
-                        player.send(pickle.dumps('ожидайте ответа'))
 
                         room.broadcast(player, f"{name} назвал город {city}")
                         current_letter = city[-1]
