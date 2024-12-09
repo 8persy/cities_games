@@ -147,6 +147,8 @@ class CityGameServer:
                         room.remove_all()
                         threading.Thread(target=self.handle_client, args=(player, name)).start()
 
+                        break
+
                     else:
                         player.send(pickle.dumps(f"Придётся играть тут {name}. Введите название города: "))
                         command = pickle.loads(player.recv(1024)).strip()
@@ -179,6 +181,8 @@ class CityGameServer:
 
                     if self.is_valid_city(city, current_letter, room):
                         room.city_history.append(city)
+
+                        player.send(pickle.dumps('ожидайте ответа'))
 
                         room.broadcast(player, f"{name} назвал город {city}")
                         current_letter = city[-1]
