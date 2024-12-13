@@ -136,25 +136,14 @@ class CityGameServer:
 
                 if command == '1':
                     player.send(pickle.dumps('exit'))
-                    room.broadcast(player, f'игрок {name} вышел')
+                    self.delete_player(room=room, player=player, name=name, turn_index=turn_index)
                     game_over = True
-                    turn_index = (turn_index + 1) % 2
-                    player: socket.socket = room.clients[turn_index]
-                    name: str = room.names[turn_index]
-                    room.remove_all()
-                    threading.Thread(target=self.handle_client, args=(player, name)).start()
                     break
 
                 elif command == '2':
                     if self.join(player, name):
-                        room.broadcast(player, f'игрок {name} вышел')
+                        self.delete_player(room=room, player=player, name=name, turn_index=turn_index)
                         game_over = True
-                        turn_index = (turn_index + 1) % 2
-                        player: socket.socket = room.clients[turn_index]
-                        name: str = room.names[turn_index]
-                        room.remove_all()
-                        threading.Thread(target=self.handle_client, args=(player, name)).start()
-
                         break
 
                     else:
@@ -202,6 +191,14 @@ class CityGameServer:
 
                     else:
                         player.send(pickle.dumps("Неправильный город! Попробуйте снова: "))
+
+    def delete_player(self, room: Room, player: socket.socket, name: str, turn_index: int):
+        room.broadcast(player, f'игрок {name} вышел')
+        turn_index = (turn_index + 1) % 2
+        player: socket.socket = room.clients[turn_index]
+        name: str = room.names[turn_index]
+        room.remove_all()
+        threading.Thread(target=self.handle_client, args=(player, name)).start()
 
     @staticmethod
     def is_valid_city(city, current_letter, room: Room):
