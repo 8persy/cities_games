@@ -2,7 +2,7 @@ import pickle
 import socket
 import threading
 
-from PyQt6.QtCore import pyqtSignal, QObject, pyqtSlot
+from PyQt6.QtCore import pyqtSignal, QObject
 from PyQt6.QtWidgets import QMainWindow, QApplication, QPushButton
 
 from client_gui import Ui_MainWindow
@@ -37,7 +37,6 @@ class CityGameClient(QObject):
                 print("Соединение с сервером потеряно.")
                 self.running = False
                 self.client_socket.close()
-                self.main_thread.join()
                 break
 
     def send_msg(self, msg):
@@ -67,8 +66,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             button.clicked.connect(lambda clicked, MSG=i: self.click_buttons(str(MSG)))
 
     def add_msg(self, msg):
-        if msg == 'exit':
-            self.self_close()
         self.output.append(msg)
 
     def send_message(self):

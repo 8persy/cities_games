@@ -93,6 +93,7 @@ class CityGameServer:
             room = self.rooms[room_name]
             room.add_client(client_socket, player_name)
 
+        client_socket.send(pickle.dumps(f'комната {room_name} создана'))
         client_socket.send(pickle.dumps('ждём второго игрока...'))
 
         threading.Thread(target=self.play_game, args=(room,)).start()
