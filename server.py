@@ -59,11 +59,14 @@ class CityGameServer:
         player_name = name
 
         if not name:
-            time.sleep(0.1)
+            time.sleep(0.5)
             client_socket.send(pickle.dumps("Введите совё имя: "))
             player_name = pickle.loads(client_socket.recv(1024)).strip()
+            print(player_name)
+            client_socket.send(pickle.dumps(f"close"))
+            time.sleep(0.5)
             client_socket.send(pickle.dumps(f"Здравствуйте {player_name} :)"))
-
+        time.sleep(0.5)
         client_socket.send(pickle.dumps('1. создать комнату \n2. вступить в комнату \n3. покинуть игру'))
 
         while True:
@@ -93,6 +96,9 @@ class CityGameServer:
             room = self.rooms[room_name]
             room.add_client(client_socket, player_name)
 
+        client_socket.send(pickle.dumps(f'комната {room_name} создаётся'))
+
+        time.sleep(0.5)
         client_socket.send(pickle.dumps(f'комната {room_name} создана'))
         client_socket.send(pickle.dumps('ждём второго игрока...'))
 
@@ -106,6 +112,7 @@ class CityGameServer:
             with self.lock:
                 if room_name in self.rooms:
                     room = self.rooms[room_name]
+                    client_socket.send(pickle.dumps(f'комната {room_name} создаётся'))
                     room.add_client(client_socket, player_name)
                     return True
                 else:
@@ -124,6 +131,7 @@ class CityGameServer:
             continue
 
         for client in room.clients:
+            time.sleep(0.5)
             client.send(pickle.dumps(f"Игра началась! {room.names[0]} вводит первый город."))
 
         while not game_over:
@@ -135,9 +143,10 @@ class CityGameServer:
                 command = pickle.loads(player.recv(1024)).strip()
 
                 if command == '1':
-                    player.send(pickle.dumps('exit'))
+                    # player.send(pickle.dumps('end'))
                     self.delete_player(room=room, player=player, name=name, turn_index=turn_index)
                     game_over = True
+                    threading.Thread(target=self.handle_client, args=(player, name)).start()
                     break
 
                 elif command == '2':
